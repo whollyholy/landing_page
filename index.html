@@ -622,12 +622,15 @@
             A marketplace for <span class="highlight">toxin-free products</span> that promote your health. Join the waitlist to be the first to know.
         </p>
         
-        <form class="email-form" id="emailForm">
+        <form class="email-form" id="emailForm" name="waitlist" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="waitlist" />
+            <input type="hidden" name="bot-field" />
             <div class="form-group">
                 <input 
                     type="email" 
                     class="email-input" 
                     id="emailInput"
+                    name="email"
                     placeholder="Enter your email address"
                     required
                 >
@@ -691,8 +694,6 @@
 
         // Email form validation and submission
         document.getElementById('emailForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             const emailInput = document.getElementById('emailInput');
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
@@ -706,51 +707,25 @@
             successMessage.classList.remove('show');
             
             if (!email) {
+                e.preventDefault();
                 showError('Please enter your email address.');
                 return;
             }
             
             if (!emailRegex.test(email)) {
+                e.preventDefault();
                 showError('Please enter a valid email address.');
                 return;
             }
             
-            // Simulate form submission with enhanced UX
+            // Show loading state
             submitBtn.innerHTML = '<span style="opacity: 0.7;">✓</span> Joining...';
             submitBtn.disabled = true;
             submitBtn.style.background = 'linear-gradient(135deg, #66BB6A, #81C784)';
-            
-            // Add loading animation
             submitBtn.style.animation = 'none';
             
-            setTimeout(() => {
-                // Log to console (simulating backend submission)
-                console.log('Email submitted to waitlist:', email);
-                console.log('Timestamp:', new Date().toISOString());
-                
-                // Show enhanced success message
-                successMessage.classList.add('show');
-                emailInput.value = '';
-                emailInput.style.borderColor = '#66BB6A';
-                
-                // Reset button with success state
-                submitBtn.innerHTML = '🎉 Welcome to the waitlist!';
-                submitBtn.style.background = 'linear-gradient(135deg, #4CAF50, #66BB6A)';
-                
-                setTimeout(() => {
-                    submitBtn.textContent = 'Join Waitlist';
-                    submitBtn.disabled = false;
-                    submitBtn.style.background = '';
-                    submitBtn.style.animation = '';
-                    emailInput.style.borderColor = '';
-                }, 3000);
-                
-                // Hide success message after 7 seconds
-                setTimeout(() => {
-                    successMessage.classList.remove('show');
-                }, 7000);
-                
-            }, 2000);
+            // Let Netlify handle the form submission
+            // The form will submit normally and redirect or show success
         });
         
         function showError(message) {
