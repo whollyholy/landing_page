@@ -622,9 +622,10 @@
             A marketplace for <span class="highlight">toxin-free products</span> that promote your health. Join the waitlist to be the first to know.
         </p>
         
-        <form class="email-form" id="emailForm" name="waitlist" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <form class="email-form" id="emailForm" name="waitlist" method="POST" action="/success.html" data-netlify="true" netlify-honeypot="bot-field">
             <input type="hidden" name="form-name" value="waitlist" />
             <input type="hidden" name="bot-field" />
+            <input type="hidden" name="_redirect" value="/success.html" />
             <div class="form-group">
                 <input 
                     type="email" 
