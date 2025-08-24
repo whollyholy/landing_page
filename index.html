@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhollyHoly.ai - Coming Soon</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -474,6 +475,44 @@
             transform: translateY(0);
         }
 
+        .recaptcha-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+
+        .g-recaptcha {
+            transform: scale(0.9);
+            transform-origin: 0 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .g-recaptcha:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: scale(0.92);
+        }
+
+        .recaptcha-error-message {
+            margin-top: 0.5rem;
+            color: #D32F2F;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .recaptcha-error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .footer {
             text-align: center;
             padding: 2rem;
@@ -587,6 +626,10 @@
             .footer-content {
                 flex-direction: column;
             }
+
+            .g-recaptcha {
+                transform: scale(0.8);
+            }
         }
 
         @media (max-width: 480px) {
@@ -606,6 +649,10 @@
 
             .logo::before {
                 font-size: 1.5rem;
+            }
+
+            .g-recaptcha {
+                transform: scale(0.7);
             }
         }
     </style>
@@ -636,6 +683,16 @@
                     required
                 >
                 <div class="error-message" id="errorMessage"></div>
+            </div>
+            
+            <div class="recaptcha-container">
+                <div class="g-recaptcha" 
+                     data-sitekey="6LeE7rArAAAAADLMDJxn7caYI02FyZVvB4MC698C" 
+                     data-theme="light"
+                     data-callback="onRecaptchaSuccess"
+                     data-expired-callback="onRecaptchaExpired"
+                     data-error-callback="onRecaptchaError"></div>
+                <div class="recaptcha-error-message" id="recaptchaErrorMessage"></div>
             </div>
             
             <button type="submit" class="submit-btn" id="submitBtn">
@@ -697,6 +754,7 @@
         document.getElementById('emailForm').addEventListener('submit', function(e) {
             const emailInput = document.getElementById('emailInput');
             const errorMessage = document.getElementById('errorMessage');
+            const recaptchaErrorMessage = document.getElementById('recaptchaErrorMessage');
             const successMessage = document.getElementById('successMessage');
             const submitBtn = document.getElementById('submitBtn');
             
@@ -705,6 +763,7 @@
             
             // Reset messages
             errorMessage.classList.remove('show');
+            recaptchaErrorMessage.classList.remove('show');
             successMessage.classList.remove('show');
             
             if (!email) {
@@ -716,6 +775,14 @@
             if (!emailRegex.test(email)) {
                 e.preventDefault();
                 showError('Please enter a valid email address.');
+                return;
+            }
+            
+            // Check reCAPTCHA
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (!recaptchaResponse) {
+                e.preventDefault();
+                showRecaptchaError('Please complete the reCAPTCHA verification.');
                 return;
             }
             
@@ -739,6 +806,16 @@
             }, 3000);
         }
         
+        function showRecaptchaError(message) {
+            const recaptchaErrorMessage = document.getElementById('recaptchaErrorMessage');
+            recaptchaErrorMessage.textContent = message;
+            recaptchaErrorMessage.classList.add('show');
+            
+            setTimeout(() => {
+                recaptchaErrorMessage.classList.remove('show');
+            }, 4000);
+        }
+        
         // Add input event listener for real-time validation feedback
         document.getElementById('emailInput').addEventListener('input', function() {
             const errorMessage = document.getElementById('errorMessage');
@@ -746,6 +823,27 @@
                 errorMessage.classList.remove('show');
             }
         });
+        
+        // reCAPTCHA callback functions
+        function onRecaptchaSuccess() {
+            const recaptchaErrorMessage = document.getElementById('recaptchaErrorMessage');
+            if (recaptchaErrorMessage.classList.contains('show')) {
+                recaptchaErrorMessage.classList.remove('show');
+            }
+        }
+        
+        function onRecaptchaExpired() {
+            showRecaptchaError('reCAPTCHA has expired. Please verify again.');
+        }
+        
+        function onRecaptchaError() {
+            showRecaptchaError('reCAPTCHA verification failed. Please try again.');
+        }
+        
+        // Make functions global for reCAPTCHA callbacks
+        window.onRecaptchaSuccess = onRecaptchaSuccess;
+        window.onRecaptchaExpired = onRecaptchaExpired;
+        window.onRecaptchaError = onRecaptchaError;
         
         // Create initial particles with staggered timing
         for (let i = 0; i < 8; i++) {
